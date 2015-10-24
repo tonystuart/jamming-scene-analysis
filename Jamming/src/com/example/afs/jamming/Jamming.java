@@ -12,13 +12,20 @@ package com.example.afs.jamming;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.imageio.ImageIO;
 import javax.sound.midi.Sequence;
 
+import sequencemapper.BlockSequence;
+import sequencemapper.SequenceMapper;
+import sequencemapper.SequenceMapperFactory;
+import sequencemapper.SequencedBlock;
+
 import com.example.afs.jamming.color.base.ColorMaps;
+import com.example.afs.jamming.color.rgb.Color;
 import com.example.afs.jamming.command.Command;
 import com.example.afs.jamming.command.Command.Type;
 import com.example.afs.jamming.command.Monitor;
@@ -26,14 +33,16 @@ import com.example.afs.jamming.command.OptionParser;
 import com.example.afs.jamming.command.Options;
 import com.example.afs.jamming.command.RaspistillWatcher;
 import com.example.afs.jamming.command.Trace.TraceOption;
-import com.example.afs.jamming.image.Frame;
+import com.example.afs.jamming.image.Block;
+import com.example.afs.jamming.image.ImageProcessor;
 import com.example.afs.jamming.image.ImageViewer;
 import com.example.afs.jamming.image.ImageViewer.Availability;
-import com.example.afs.jamming.image.Scene;
-import com.example.afs.jamming.rowmapper.MappedBlock;
+import com.example.afs.jamming.image.Item;
+import com.example.afs.jamming.sound.Composable;
 import com.example.afs.jamming.sound.Converter;
 import com.example.afs.jamming.sound.MarkerComposable;
 import com.example.afs.jamming.sound.Player;
+import com.example.afs.jamming.utility.Node;
 
 public class Jamming {
 
@@ -47,7 +56,7 @@ public class Jamming {
 
   private ImageViewer afterImageViewer;
   private ImageViewer beforeImageViewer;
-  private Frame currentFrame;
+  private BlockSequence blockSequence;
   private boolean isPlaying;
   private boolean isRunning;
   private int loopCount;
@@ -55,8 +64,8 @@ public class Jamming {
   private int midiProgram;
   private boolean midiProgramLoop;
   private float midiTempoFactor;
-  private Monitor monitor;
 
+  private Monitor monitor;
   private Options options;
   private Player player;
   private BlockingQueue<Command> queue;
@@ -68,10 +77,8 @@ public class Jamming {
     midiProgram = options.getMidiProgram();
     midiTempoFactor = options.getMidiTempoFactor();
     midiProgramLoop = options.isMidiProgramLoop();
-    if (options.isDisplayImage()) {
-      beforeImageViewer = new ImageViewer();
-      afterImageViewer = new ImageViewer();
-    }
+    beforeImageViewer = new ImageViewer();
+    afterImageViewer = new ImageViewer();
     raspistillWatcher = new RaspistillWatcher(options);
     queue = new LinkedBlockingQueue<>();
     player = new Player(queue, midiTempoFactor);
@@ -89,11 +96,28 @@ public class Jamming {
     };
   }
 
+  public Node<Block> processImage(BufferedImage image) {
+    ImageProcessor imageProcessor = new ImageProcessor(image, options);
+    Node<Item> items = imageProcessor.extractItems();
+    Node<Block> blocks = new Node<>();
+    for (Item item : items.getValues()) {
+      Block block = convertItemToBlock(imageProcessor, item);
+      blocks.addChild(block);
+    }
+    return blocks;
+  }
+
+  private Block convertItemToBlock(ImageProcessor imageProcessor, Item item) {
+    int averageRgb = item.getColor().getRgb();
+    Entry<? extends Color, ? extends Composable> entry = options.getColorMap().findClosestEntry(averageRgb);
+    Block block = new Block(item, entry.getKey(), entry.getValue(), averageRgb);
+    return block;
+  }
+
   private void displayHelp() {
     System.out.println("\nConsole monitor commands:");
     System.out.println("  Calibrate def - calibrate current color map");
     System.out.println("  Channel n - select midi channel n (zero based)");
-    System.out.println("  Image - toggle image processing");
     System.out.println("  Loop - toggle loop through midi programs");
     System.out.println("  Map [map] - display/set current color map");
     System.out.println("  Next - stop current frame and play next");
@@ -101,7 +125,7 @@ public class Jamming {
     System.out.println("  Program n - select midi program n");
     System.out.println("  Quit - terminate program");
     System.out.println("  Resume - reset and/or resume play");
-    System.out.println("  Rows - display/set row spacing");
+    System.out.println("  Size rows columns - set number of rows and columns");
     System.out.println("  Tempo f - set midi tempo to f");
     System.out.println("  Tron t - set trace option t on");
     System.out.println("  Troff t - set trace option t off");
@@ -116,10 +140,14 @@ public class Jamming {
     }
   }
 
-  private BufferedImage getImage(String fileName, int loopCount) {
-    if (options.getTrace().isSet(TraceOption.INPUT)) {
-      System.out.println("Reading next image");
+  private void displayInfo(String message, Iterable<?> items) {
+    System.out.println(message);
+    for (Object item : items) {
+      System.out.println(item);
     }
+  }
+
+  private BufferedImage getImage(String fileName, int loopCount) {
     File file = new File(fileName);
     BufferedImage image;
     try {
@@ -145,22 +173,28 @@ public class Jamming {
     }
   }
 
-  private void play(Frame frame) {
-    if (options.isPlayAudio()) {
-      Scene scene = frame.getScene();
-      if (scene.containsBlocks()) {
-        Converter converter = new Converter(options, frame.getMidiChannel(), frame.getMidiProgram());
-        Sequence sequence = converter.convert(scene);
-        player.play(sequence);
-      } else {
-        try {
-          Thread.sleep(1000);
-          queue.add(new Command(Type.END_OF_TRACK));
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
+  private BlockSequence getSequencedBlocks(Node<Block> blocks, int width, int height) {
+    SequenceMapper sequenceMapper = SequenceMapperFactory.getSequenceMapper(options);
+    BlockSequence blockSequence = sequenceMapper.mapBlocks(blocks, width, height);
+    Node<SequencedBlock> sequencedBlocks = blockSequence.getSequencedBlocks();
+    if (options.getTrace().isSet(TraceOption.SCENE)) {
+      displayInfo("The scene contains " + blocks.getChildNodeCount() + " block(s)", sequencedBlocks.getValues());
+    }
+    if (options.getTrace().isSet(TraceOption.MAPPING)) {
+      System.out.println("The scene contains the following color mapping(s)");
+      int number = 1;
+      for (SequencedBlock sequencedBlock : sequencedBlocks.getValues()) {
+        int row = sequencedBlock.getRow();
+        int column = sequencedBlock.getColumn();
+        Color averageColor = sequencedBlock.getBlock().getAverageColor();
+        Color matchingColor = sequencedBlock.getBlock().getColor();
+        Composable composable = sequencedBlock.getBlock().getComposable();
+        //System.out.println(row + " - " + column + ": " + averageColor + " " + matchingColor + " " + composable);
+        System.out.printf("%03d %03d %03d: %s %s %s\n", number, row + 1, column + 1, averageColor, matchingColor, composable);
+        number++;
       }
     }
+    return blockSequence;
   }
 
   private void processCommand(Command command) {
@@ -177,8 +211,6 @@ public class Jamming {
         midiChannel = Integer.parseInt(command.getToken(1));
       } else if (command.matches("Help")) {
         displayHelp();
-      } else if (command.matches("Image")) {
-        processImageCommand();
       } else if (command.matches("Loop")) {
         processMidiLoopCommand();
       } else if (command.matches("Map")) {
@@ -196,10 +228,10 @@ public class Jamming {
         player.close();
       } else if (command.matches("Resume")) {
         isPlaying = true;
-        player.stop();
-        processFrame();
-      } else if (command.matches("Rows")) {
-        processRowCommand(command.getOperands());
+        player.resume();
+      } else if (command.matches("Size")) {
+        options.setRowCount(Integer.parseInt(command.getToken(1)));
+        options.setColumnCount(Integer.parseInt(command.getToken(2)));
       } else if (command.matches("Tempo")) {
         midiTempoFactor = Float.parseFloat(command.getToken(1));
         player.setTempoFactor(midiTempoFactor);
@@ -220,37 +252,17 @@ public class Jamming {
   }
 
   private void processFrame() {
-    if (options.isProcessImage()) {
-      String filename = raspistillWatcher.takePhoto();
-      BufferedImage image = getImage(filename, loopCount);
-      if (options.isDisplayImage()) {
-        beforeImageViewer.display(image, "Before " + loopCount, Availability.TRANSIENT);
-      }
-      afterImageViewer.clearHighlights();
-      Scene scene = new Scene(options, image);
-      Frame nextFrame = new Frame(scene, midiChannel, getMidiProgram(), options.getColorMap());
-      if (nextFrame.isDifferentFrom(currentFrame)) {
-        if (options.isDisplayImage()) {
-          afterImageViewer.display(image, "After " + loopCount, Availability.PERSISTENT);
-        }
-        currentFrame = nextFrame;
-      }
-    } else {
-      afterImageViewer.clearHighlights();
-    }
-    if (currentFrame != null) {
-      play(currentFrame);
-    }
+    String filename = raspistillWatcher.takePhoto();
+    BufferedImage image = getImage(filename, loopCount);
+    beforeImageViewer.display(image, "Before " + loopCount, Availability.TRANSIENT);
+    afterImageViewer.clearHighlights();
+    Node<Block> blocks = processImage(image);
+    blockSequence = getSequencedBlocks(blocks, image.getWidth(), image.getHeight());
+    afterImageViewer.display(image, "After " + loopCount, Availability.PERSISTENT);
+    Converter converter = new Converter(options, midiChannel, getMidiProgram());
+    Sequence sequence = converter.convert(blockSequence);
+    player.play(sequence);
     loopCount++;
-  }
-
-  private void processImageCommand() {
-    options.setProcessImage(!options.isProcessImage());
-    if (options.isProcessImage()) {
-      System.out.println("Image processing is enabled");
-    } else {
-      System.out.println("Image processing is disabled");
-    }
   }
 
   private void processMapCommand(String[] operands) {
@@ -271,14 +283,15 @@ public class Jamming {
   }
 
   private void processMarkerEvent(String marker) {
+    Node<SequencedBlock> sequencedBlocks = blockSequence.getSequencedBlocks();
     if (marker.startsWith(MarkerComposable.MARKER_BEGIN)) {
       int blockIndex = Integer.parseInt(marker.substring(MarkerComposable.MARKER_BEGIN.length()));
-      MappedBlock mappedBlock = currentFrame.getScene().getMappedBlocks()[blockIndex];
-      afterImageViewer.addHighlight(blockIndex, mappedBlock);
+      SequencedBlock sequencedBlock = sequencedBlocks.getChildNodes().getValue(blockIndex);
+      afterImageViewer.addHighlight(blockIndex, sequencedBlock);
     } else if (marker.startsWith(MarkerComposable.MARKER_END)) {
       int blockIndex = Integer.parseInt(marker.substring(MarkerComposable.MARKER_END.length()));
-      MappedBlock mappedBlock = currentFrame.getScene().getMappedBlocks()[blockIndex];
-      afterImageViewer.removeHighlight(blockIndex, mappedBlock);
+      SequencedBlock sequencedBlock = sequencedBlocks.getChildNodes().getValue(blockIndex);
+      afterImageViewer.removeHighlight(blockIndex, sequencedBlock);
     }
   }
 
@@ -288,14 +301,6 @@ public class Jamming {
       System.out.println("Midi program looping is enabled");
     } else {
       System.out.println("Midi program looping is disabled");
-    }
-  }
-
-  private void processRowCommand(String[] operands) {
-    if (operands.length == 0) {
-      System.out.println("Current row spacing is " + options.getRowSpacing());
-    } else if (operands.length == 1) {
-      options.setRowSpacing(Integer.parseInt(operands[0]));
     }
   }
 

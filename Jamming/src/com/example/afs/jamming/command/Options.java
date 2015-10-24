@@ -9,54 +9,45 @@
 
 package com.example.afs.jamming.command;
 
+import sequencemapper.SequenceMapperFactory.SequenceMapping;
+
 import com.example.afs.jamming.color.base.ColorMap;
 import com.example.afs.jamming.color.base.ColorMaps;
-import com.example.afs.jamming.color.rgb.Color;
 import com.example.afs.jamming.command.Raspistill.WhiteBalance;
 import com.example.afs.jamming.command.Trace.TraceOption;
-import com.example.afs.jamming.image.ItemFinder.Background;
 import com.example.afs.jamming.sound.Converter;
 import com.example.afs.jamming.sound.Converter.TickOrigin;
 
 public class Options {
 
-  private Background backgroundCondition = Background.LESS_THAN;
-  private int backgroundThreshold = Color.getColor(64, 64, 64);
   private ColorMap colorMap = ColorMaps.getSingleton().getDefault();
+  private int columnCount = 24;
   private String imageBaseFilename = "Jamming";
   private int imageBrightness = 40;
   private String imageCaptureProgram = "raspistill";
-  private int imageHeight = 768;
   private int imageRotation = 90;
+  private int imageSizeHeight = 768;
+  private int imageSizeWidth = 1024;
   private WhiteBalance imageWhiteBalance = WhiteBalance.auto;
   private String imageWhiteBalanceGain = "1.0,1.2";
-  private int imageWidth = 1024;
-  private boolean isDisplayImage = true;
   private boolean isMidiProgramLoop = false;
-  private boolean isPlayAudio = true;
-  private boolean isProcessImage = true;
-  private boolean isVerbose = false;
   private int midiBaseVelocity = Converter.MAXIMUM_VELOCITY / 2;
   private int midiChannel = 0;
   private int midiProgram = 1;
   private float midiTempoFactor = 1.0f;
   private TickOrigin midiTickOrigin = TickOrigin.MIDPOINT;
   private int objectFuzziness = 10;
-  private int objectMinimumSize = 30;
-  private int rowSpacing = 0;
+  private int rowCount = 16;
+  private SequenceMapping sequenceMapping = SequenceMapping.COLUMN;
   private int threads = 0;
   private Trace trace = new Trace(TraceOption.MAPPING, TraceOption.MARKER, TraceOption.PERFORMANCE);
 
-  public Background getBackgroundCondition() {
-    return backgroundCondition;
-  }
-
-  public int getBackgroundThreshold() {
-    return backgroundThreshold;
-  }
-
   public ColorMap getColorMap() {
     return colorMap;
+  }
+
+  public int getColumnCount() {
+    return columnCount;
   }
 
   public String getImageBaseFilename() {
@@ -71,10 +62,6 @@ public class Options {
     return imageCaptureProgram;
   }
 
-  public int getImageHeight() {
-    return imageHeight;
-  }
-
   public String getImageLatestFilename() {
     return imageBaseFilename + ".jpg";
   }
@@ -87,16 +74,20 @@ public class Options {
     return imageRotation;
   }
 
+  public int getImageSizeHeight() {
+    return imageSizeHeight;
+  }
+
+  public int getImageSizeWidth() {
+    return imageSizeWidth;
+  }
+
   public WhiteBalance getImageWhiteBalance() {
     return imageWhiteBalance;
   }
 
   public String getImageWhiteBalanceGain() {
     return imageWhiteBalanceGain;
-  }
-
-  public int getImageWidth() {
-    return imageWidth;
   }
 
   public int getMidiBaseVelocity() {
@@ -123,12 +114,12 @@ public class Options {
     return objectFuzziness;
   }
 
-  public int getObjectMinimumSize() {
-    return objectMinimumSize;
+  public int getRowCount() {
+    return rowCount;
   }
 
-  public int getRowSpacing() {
-    return rowSpacing;
+  public SequenceMapping getSequenceMapping() {
+    return sequenceMapping;
   }
 
   public int getThreads() {
@@ -139,40 +130,16 @@ public class Options {
     return trace;
   }
 
-  public boolean isDisplayImage() {
-    return isDisplayImage;
-  }
-
   public boolean isMidiProgramLoop() {
     return isMidiProgramLoop;
-  }
-
-  public boolean isPlayAudio() {
-    return isPlayAudio;
-  }
-
-  public boolean isProcessImage() {
-    return isProcessImage;
-  }
-
-  public boolean isVerbose() {
-    return isVerbose;
-  }
-
-  public void setBackgroundCondition(Background backgroundCondition) {
-    this.backgroundCondition = backgroundCondition;
-  }
-
-  public void setBackgroundThreshold(int backgroundRgb) {
-    this.backgroundThreshold = backgroundRgb;
   }
 
   public void setColorMap(ColorMap colorMap) {
     this.colorMap = colorMap;
   }
 
-  public void setDisplayImage(boolean isImage) {
-    this.isDisplayImage = isImage;
+  public void setColumnCount(int columnCount) {
+    this.columnCount = columnCount;
   }
 
   public void setImageBaseFilename(String imageBaseFilename) {
@@ -187,12 +154,16 @@ public class Options {
     this.imageCaptureProgram = imageCaptureProgram;
   }
 
-  public void setImageHeight(int imageHeight) {
-    this.imageHeight = imageHeight;
-  }
-
   public void setImageRotation(int imageRotation) {
     this.imageRotation = imageRotation;
+  }
+
+  public void setImageSizeHeight(int imageHeight) {
+    this.imageSizeHeight = imageHeight;
+  }
+
+  public void setImageSizeWidth(int imageWidth) {
+    this.imageSizeWidth = imageWidth;
   }
 
   public void setImageWhiteBalance(WhiteBalance imageWhiteBalance) {
@@ -201,10 +172,6 @@ public class Options {
 
   public void setImageWhiteBalanceGain(String imageWhiteBalanceGain) {
     this.imageWhiteBalanceGain = imageWhiteBalanceGain;
-  }
-
-  public void setImageWidth(int imageWidth) {
-    this.imageWidth = imageWidth;
   }
 
   public void setMidiBaseVelocity(int velocity) {
@@ -235,20 +202,12 @@ public class Options {
     this.objectFuzziness = fuzziness;
   }
 
-  public void setObjectMinimumSize(int minimumSize) {
-    this.objectMinimumSize = minimumSize;
+  public void setRowCount(int rowCount) {
+    this.rowCount = rowCount;
   }
 
-  public void setPlayAudio(boolean isAudio) {
-    this.isPlayAudio = isAudio;
-  }
-
-  public void setProcessImage(boolean isProcessImage) {
-    this.isProcessImage = isProcessImage;
-  }
-
-  public void setRowSpacing(int rowSpacing) {
-    this.rowSpacing = rowSpacing;
+  public void setSequenceMapping(SequenceMapping sequenceMapping) {
+    this.sequenceMapping = sequenceMapping;
   }
 
   public void setThreads(int threads) {
@@ -259,8 +218,9 @@ public class Options {
     this.trace = trace;
   }
 
-  public void setVerbose(boolean isVerbose) {
-    this.isVerbose = isVerbose;
+  @Override
+  public String toString() {
+    return "Options [colorMap=" + colorMap + ", imageBaseFilename=" + imageBaseFilename + ", imageBrightness=" + imageBrightness + ", imageCaptureProgram=" + imageCaptureProgram + ", imageRotation=" + imageRotation + ", imageSizeHeight=" + imageSizeHeight + ", imageSizeWidth=" + imageSizeWidth + ", imageWhiteBalance=" + imageWhiteBalance + ", imageWhiteBalanceGain=" + imageWhiteBalanceGain + ", isMidiProgramLoop=" + isMidiProgramLoop + ", columnCount=" + columnCount + ", rowCount=" + rowCount + ", midiBaseVelocity=" + midiBaseVelocity + ", midiChannel=" + midiChannel + ", midiProgram=" + midiProgram + ", midiTempoFactor=" + midiTempoFactor + ", midiTickOrigin=" + midiTickOrigin + ", objectFuzziness=" + objectFuzziness + ", threads=" + threads + ", trace=" + trace + "]";
   }
 
 }

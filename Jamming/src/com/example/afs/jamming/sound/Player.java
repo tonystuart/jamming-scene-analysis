@@ -65,6 +65,10 @@ public class Player {
     }
   }
 
+  public void resume() {
+    sequencer.start();
+  }
+
   public void setTempoFactor(float tempoFactor) {
     sequencer.setTempoFactor(tempoFactor);
   }

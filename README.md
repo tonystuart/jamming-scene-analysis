@@ -1,16 +1,11 @@
-Jamming lets you compose and perform music using the color, position and size of colored objects.
+Jamming Scene Analysis converts an image of a natural or synthetic scene into a musical composition.
 
-The current system uses a Raspberry Pi (with integrated camera) that is mounted on an arm and pointed downward toward a table top.
+It is based on Jamming with Color (aka Jamming) as demonstrated at the Seattle Mini Maker Faire, September 19th and 20th, 2015.
 
-It takes an image of the objects on the table top every second and processes the image to identify the position, shape and color of the objects in the image.
+Jamming Scene Analysis is based on the assumption that scenes contain repeating and nested patterns that can be converted into pleasing musical compositions by finding the hidden model that relates the two.
 
-It then converts the color of each object to its relative position in the spectrum (i.e. the colors of the rainbow, from red to violet) and converts that position to a note in a four octave range.
+Some of these models may be relatively straightforward, like dividing the scene into a grid of rows and columns (or columns and rows) and converting the average color of each square in the grid into a note, chord or drum beat. Similar adjacent squares can be combined to produce variations in timing.
 
-Finally, it uses the relative position and size of each object to convert the notes to a musical sequence.
+A more complex model may consist of sampling the scene at different resolutions for different parts of the composition. For example, a low resolution sampling for the introduction, a medium resolution sampling for the chorus, a high resolution sampling for each verse and a derivative of the intro for the ending.
 
-You can play notes one at a time by placing the objects horizontally (along the x-axis) or compose chords by placing the objects vertically (along the y-axis). The width of each object represents its duration and the height of each object represents its volume (pending).
-
-The resulting sequence is played repeatedly in a loop and the sequence is updated dynamically as you change the objects and their positions.
-
-There are a number of setup parameters including whether it converts the color to notes or drum sounds, the mapping of color to sound (i.e. the four octave range is just one possible mapping), the duration and tempo of the music, the image update frequency, etc.
-
+From here, one can add rules for creating bridges, instrumental solos and other interesting things... and sequential translation of the grid squares is only one option, with other possibilities including non-linear patterns or algorithms that look for interesting objects, colors and relationships in the scene.

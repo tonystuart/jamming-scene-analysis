@@ -7,14 +7,13 @@
 // This program is made available on an "as is" basis, without
 // warranties or conditions of any kind, either express or implied.
 
-package com.example.afs.jamming.rowmapper;
+package sequencemapper;
 
 import com.example.afs.jamming.image.Block;
+import com.example.afs.jamming.utility.Node;
 
-public interface RowMapper {
+public interface SequenceMapper {
 
-  int getMappedWidth();
-
-  MappedBlock getPosition(Block block);
+  BlockSequence mapBlocks(Node<Block> blocks, int width, int height);
 
 }

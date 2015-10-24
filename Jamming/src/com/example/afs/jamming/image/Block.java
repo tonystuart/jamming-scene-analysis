@@ -26,14 +26,6 @@ public class Block {
     this.averageRgb = averageRgb;
   }
 
-  public boolean fuzzyEquals(Block that, int minimumSize) {
-    boolean fuzzyEquals = fuzzyEquals(this.item.getTop(), that.item.getTop(), minimumSize) && //
-        fuzzyEquals(this.item.getLeft(), that.item.getLeft(), minimumSize) && //
-        fuzzyEquals(this.item.getWidth(), that.item.getWidth(), minimumSize) && //
-        fuzzyEquals(this.item.getHeight(), that.item.getHeight(), minimumSize);
-    return fuzzyEquals;
-  }
-
   public Color getAverageColor() {
     Color averageColor;
     if (color instanceof HsbColor) {
@@ -68,7 +60,4 @@ public class Block {
     }
   }
 
-  private boolean fuzzyEquals(int thisInt, int thatInt, int minimumSize) {
-    return Math.abs(thisInt - thatInt) < minimumSize;
-  }
 }

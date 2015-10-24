@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import com.example.afs.jamming.rowmapper.MappedBlock;
+import sequencemapper.SequencedBlock;
 
 public class ImageViewer extends JFrame {
 
@@ -41,13 +41,13 @@ public class ImageViewer extends JFrame {
     public void paint(Graphics g) {
       if (image != null) {
         g.drawImage(image, 0, 0, null);
-        for (Entry<String, MappedBlock> entry : highlights.entrySet()) {
+        for (Entry<String, SequencedBlock> entry : highlights.entrySet()) {
           String value = entry.getKey();
-          MappedBlock mappedBlock = entry.getValue();
-          int left = mappedBlock.getBlock().getItem().getLeft();
-          int top = mappedBlock.getBlock().getItem().getTop();
-          int width = mappedBlock.getBlock().getItem().getWidth();
-          int height = mappedBlock.getBlock().getItem().getHeight();
+          SequencedBlock sequencedBlock = entry.getValue();
+          int left = sequencedBlock.getBlock().getItem().getLeft();
+          int top = sequencedBlock.getBlock().getItem().getTop();
+          int width = sequencedBlock.getBlock().getItem().getWidth();
+          int height = sequencedBlock.getBlock().getItem().getHeight();
           FontMetrics metrics = g.getFontMetrics();
           int markerWidth = metrics.stringWidth(value) + 6;
           int markerHeight = metrics.getHeight() + 6;
@@ -63,7 +63,7 @@ public class ImageViewer extends JFrame {
     }
   }
 
-  private Map<String, MappedBlock> highlights = new ConcurrentHashMap<>();
+  private Map<String, SequencedBlock> highlights = new ConcurrentHashMap<>();
   private ImagePanel imagePanel;
 
   public ImageViewer() {
@@ -71,8 +71,8 @@ public class ImageViewer extends JFrame {
     getContentPane().add(imagePanel, BorderLayout.CENTER);
   }
 
-  public void addHighlight(int index, MappedBlock mappedBlock) {
-    highlights.put(Integer.toString(index + 1), mappedBlock);
+  public void addHighlight(int index, SequencedBlock sequencedBlock) {
+    highlights.put(Integer.toString(index + 1), sequencedBlock);
     imagePanel.repaint();
   }
 
@@ -86,13 +86,14 @@ public class ImageViewer extends JFrame {
       image = copyImage(image);
     }
     imagePanel.display(image);
-    setSize(imagePanel.getSize());
+    getContentPane().setPreferredSize(imagePanel.getSize());
+    pack();
     setTitle(title + " - " + image.getWidth(null) + "x" + image.getHeight(null));
     setAutoRequestFocus(false);
     setVisible(true);
   }
 
-  public void removeHighlight(int index, MappedBlock mappedBlock) {
+  public void removeHighlight(int index, SequencedBlock sequencedBlock) {
   }
 
   @Override

@@ -10,181 +10,84 @@
 package com.example.afs.jamming.image;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
+import com.example.afs.jamming.color.hsb.HsbColor;
 import com.example.afs.jamming.color.rgb.Color;
-
-// Be sure to consider special cases:
-//
-// See Test-M.png:
-//
-// **********
-// **********
-//  ** ** **
-//  ** **
-//     **
-//
-// See Test-W.png:
-//
-//     **
-//  ** **
-//  ** ** **
-// **********
-// **********
-//
-// See Test-M-Detached.png:
-//
-// **********
-// **********
-//  **    **
-//  ** ** **
-//     **
-//
-// See Test-W-Detached.png:
-//
-//     **
-//  ** ** **
-//  **    **
-// **********
-// **********
-//
+import com.example.afs.jamming.utility.Node;
 
 public class ItemFinder {
 
-  public enum Background {
-    GREATER_THAN, LESS_THAN
-  }
-
-  private enum State {
-    INITIAL, ITEM
-  }
-
-  private ArrayList<Item> adjacentItemFlyweight = new ArrayList<>();
-  private Set<Item> currentItems = new LinkedHashSet<>(); // Use LinkedHashSet to ensure consistent ordering
-  private List<Item> items = new LinkedList<>();
-  private Set<Item> marks = new HashSet<>();
-
-  public List<Item> findItems(BufferedImage image, int firstRow, int lastRow, Background background, int threshold, int minimumSize) {
-    Extent extent = null;
-    int width = image.getWidth();
-    int backgroundRgb = getBackgroundRgb(background, threshold);
-    for (int y = firstRow; y <= lastRow; y++) {
-      marks.clear();
-      for (Item currentItem : currentItems) {
-        marks.add(currentItem);
-      }
-      State state = State.INITIAL;
-      for (int x = 0; x < width; x++) {
-        int rgb = image.getRGB(x, y);
-        boolean isBackground = isBackground(background, threshold, rgb);
-        switch (state) {
-          case INITIAL:
-            if (isBackground) {
-              image.setRGB(x, y, backgroundRgb);
-            } else {
-              state = State.ITEM;
-              extent = new Extent(x, y);
-            }
-            break;
-          case ITEM:
-            if (isBackground) {
-              state = State.INITIAL;
-              extent.setEndX(x - 1);
-              addExtent(extent);
-              extent = null;
-              image.setRGB(x, y, backgroundRgb);
-            }
-            break;
-          default:
-            throw new UnsupportedOperationException(state.toString());
-        }
-      }
-      if (extent != null) {
-        extent.setEndX(width - 1);
-        addExtent(extent);
-        extent = null;
-      }
-      for (Item item : marks) {
-        currentItems.remove(item);
-      }
-    }
+  public Node<Item> findItems(BufferedImage image, int top, int bottom, int left, int right, int rowCount, int columnCount) {
+    Node<Item> items = new Node<>();
+    processRows(items, image, top, bottom, left, right, rowCount, columnCount);
     return items;
   }
 
-  private void addExtent(Extent extent) {
-    Item masterItem = null;
-    List<Item> adjacentItems = findAdjacentItems(extent);
-    if (adjacentItems.size() == 0) {
-      masterItem = new Item();
-      items.add(masterItem);
-    } else {
-      for (Item adjacentItem : adjacentItems) {
-        if (masterItem == null) {
-          masterItem = adjacentItem;
-          marks.remove(masterItem);
-        } else {
-          masterItem.merge(adjacentItem);
-          items.remove(adjacentItem);
-        }
+  private Item createItem(BufferedImage image, int top, int left, int itemWidth, int itemHeight) {
+    int totalRed = 0;
+    int totalGreen = 0;
+    int totalBlue = 0;
+    for (int x = 0; x < itemWidth; x++) {
+      for (int y = 0; y < itemHeight; y++) {
+        int rgb = image.getRGB(left + x, top + y);
+        totalRed += Color.getRed(rgb);
+        totalGreen += Color.getGreen(rgb);
+        totalBlue += Color.getBlue(rgb);
       }
     }
-    masterItem.addExtent(extent);
-    currentItems.add(masterItem);
+    int totalPixels = itemWidth * itemHeight;
+    int averageRed = totalRed / totalPixels;
+    int averageGreen = totalGreen / totalPixels;
+    int averageBlue = totalBlue / totalPixels;
+    int averageRgb = Color.getColor(averageRed, averageGreen, averageBlue);
+    HsbColor color = new HsbColor(averageRgb);
+    Item item = new Item(top, left, itemWidth, itemHeight, color);
+    return item;
   }
 
-  private List<Item> findAdjacentItems(Extent extent) {
-    adjacentItemFlyweight.clear();
-    for (Item currentItem : currentItems) {
-      if (isAdjacentToPrevious(currentItem, extent)) {
-        adjacentItemFlyweight.add(currentItem);
+  private void processColumns(Node<Item> items, BufferedImage image, int top, int height, int left, int right, int columnCount) {
+    int totalWidth = right - left;
+    int itemWidth = totalWidth / columnCount;
+    int widthRemaining = totalWidth;
+    int finalColumn = columnCount - 1;
+    int itemLeft = left;
+    for (int column = 0; column < columnCount; column++) {
+      if (column == finalColumn) {
+        itemWidth = widthRemaining;
+      }
+      Item item = createItem(image, top, itemLeft, itemWidth, height);
+      items.addChild(item);
+      setAverageColor(image, item);
+      itemLeft += itemWidth;
+      widthRemaining -= itemWidth;
+    }
+  }
+
+  private void processRows(Node<Item> items, BufferedImage image, int top, int bottom, int left, int right, int rowCount, int columnCount) {
+    int totalHeight = bottom - top;
+    int itemHeight = totalHeight / rowCount;
+    int heightRemaining = totalHeight;
+    int finalRow = rowCount - 1;
+    int itemTop = top;
+    for (int row = 0; row < rowCount; row++) {
+      if (row == finalRow) {
+        itemHeight = heightRemaining;
+      }
+      processColumns(items, image, itemTop, itemHeight, left, right, columnCount);
+      itemTop += itemHeight;
+      heightRemaining -= itemHeight;
+    }
+  }
+
+  private void setAverageColor(BufferedImage image, Item item) {
+    int rgb = item.getColor().getRgb();
+    int itemHeight = item.getTop() + item.getHeight();
+    int itemWidth = item.getLeft() + item.getWidth();
+    for (int x = item.getLeft(); x < itemWidth; x++) {
+      for (int y = item.getTop(); y < itemHeight; y++) {
+        image.setRGB(x, y, rgb);
       }
     }
-    return adjacentItemFlyweight;
-  }
-
-  private int getBackgroundRgb(Background background, int threshold) {
-    int backgroundRgb;
-    switch (background) {
-      case GREATER_THAN:
-        backgroundRgb = 0xffffff;
-        break;
-      case LESS_THAN:
-        backgroundRgb = 0;
-        break;
-      default:
-        throw new UnsupportedOperationException(background.toString());
-    }
-    return backgroundRgb;
-  }
-
-  private boolean isAdjacentToPrevious(Item item, Extent currentExtent) {
-    boolean isAdjacent = false;
-    int previousBottom = currentExtent.getY() - 1;
-    Extent previousExtent = item.getExtent(previousBottom);
-    if (previousExtent != null && previousExtent.getStartX() <= currentExtent.getEndX() && previousExtent.getEndX() >= currentExtent.getStartX()) {
-      isAdjacent = true;
-    }
-    return isAdjacent;
-  }
-
-  private boolean isBackground(Background background, int threshold, int rgb) {
-    boolean isBackground;
-    switch (background) {
-      case GREATER_THAN:
-        isBackground = Color.lessThan(threshold, rgb);
-        break;
-      case LESS_THAN:
-        isBackground = Color.lessThan(rgb, threshold);
-        break;
-      default:
-        throw new UnsupportedOperationException(background.toString());
-    }
-    return isBackground;
   }
 
 }

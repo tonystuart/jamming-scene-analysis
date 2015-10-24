@@ -7,33 +7,39 @@
 // This program is made available on an "as is" basis, without
 // warranties or conditions of any kind, either express or implied.
 
-package com.example.afs.jamming.rowmapper;
+package sequencemapper;
 
 import com.example.afs.jamming.image.Block;
 
-public class MappedBlock {
+public class SequencedBlock {
+  private int begin;
   private Block block;
-  private int left;
-  private int right;
+  private int column;
+  private int end;
   private int row;
 
-  public MappedBlock(Block block, int row, int left, int right) {
+  public SequencedBlock(Block block, int row, int column, int begin, int end) {
     this.block = block;
     this.row = row;
-    this.left = left;
-    this.right = right;
+    this.column = column;
+    this.begin = begin;
+    this.end = end;
+  }
+
+  public int getBegin() {
+    return begin;
   }
 
   public Block getBlock() {
     return block;
   }
 
-  public int getLeft() {
-    return left;
+  public int getColumn() {
+    return column;
   }
 
-  public int getRight() {
-    return right;
+  public int getEnd() {
+    return end;
   }
 
   public int getRow() {
@@ -42,7 +48,7 @@ public class MappedBlock {
 
   @Override
   public String toString() {
-    return "MappedBlock [row=" + row + ", block=" + block + "]";
+    return "SequencedBlock [block=" + block + ", row=" + row + ", column=" + column + ", begin=" + begin + ", end=" + end + "]";
   }
 
 }

@@ -23,13 +23,13 @@ public class RaspistillWatcher {
       imageFile = new File(options.getImageLatestFilename());
       RaspistillBuilder raspistillBuilder = new RaspistillBuilder(options.getImageCaptureProgram());
       raspistillBuilder.setBrightness(options.getImageBrightness());
-      raspistillBuilder.setHeight(options.getImageHeight());
+      raspistillBuilder.setHeight(options.getImageSizeHeight());
       raspistillBuilder.setImageWhiteBalance(options.getImageWhiteBalance());
       raspistillBuilder.setImageWhiteBalanceGain(options.getImageWhiteBalanceGain());
       raspistillBuilder.setLatestFilename(imageFile.getName());
       raspistillBuilder.setOutputFilename(options.getImageOutputFilename());
       raspistillBuilder.setRotation(options.getImageRotation());
-      raspistillBuilder.setWidth(options.getImageWidth());
+      raspistillBuilder.setWidth(options.getImageSizeWidth());
       raspistill = raspistillBuilder.build();
       watchService = FileSystems.getDefault().newWatchService();
       String parentPathname = imageFile.getCanonicalFile().getParentFile().getCanonicalPath();

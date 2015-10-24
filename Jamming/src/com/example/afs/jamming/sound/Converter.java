@@ -13,10 +13,12 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 
+import sequencemapper.BlockSequence;
+import sequencemapper.SequencedBlock;
+
 import com.example.afs.jamming.command.Options;
 import com.example.afs.jamming.command.Trace.TraceOption;
-import com.example.afs.jamming.image.Scene;
-import com.example.afs.jamming.rowmapper.MappedBlock;
+import com.example.afs.jamming.utility.Node;
 import com.sun.media.sound.MidiUtils;
 
 public class Converter {
@@ -43,38 +45,39 @@ public class Converter {
     }
   }
 
-  public Sequence convert(Scene scene) {
+  public Sequence convert(BlockSequence blockSequence) {
     try {
+      int blockIndex = 0;
       Sequence sequence = new Sequence(Sequence.PPQ, TICKS_PER_BEAT);
       TrackBuilder trackBuilder = new TrackBuilder(sequence.createTrack());
       trackBuilder.addShortMessage(0, midiChannel, ShortMessage.PROGRAM_CHANGE, midiProgram, 0);
-      MappedBlock[] mappedBlocks = scene.getMappedBlocks();
-      for (int blockIndex = 0; blockIndex < mappedBlocks.length; blockIndex++) {
-        MappedBlock mappedBlock = mappedBlocks[blockIndex];
-        int left = mappedBlock.getLeft();
-        int right = mappedBlock.getRight();
+      Node<SequencedBlock> sequencedBlocks = blockSequence.getSequencedBlocks();
+      for (SequencedBlock sequencedBlock : sequencedBlocks.getValues()) {
+        int begin = sequencedBlock.getBegin();
+        int end = sequencedBlock.getEnd();
         int duration;
         long tick;
         switch (options.getMidiTickOrigin()) {
           case LEFT:
-            duration = right - left;
-            tick = left;
+            duration = end - begin;
+            tick = begin;
             break;
           case MIDPOINT:
-            duration = (right - left) / 2;
-            tick = left + duration;
+            duration = (end - begin) / 2;
+            tick = begin + duration;
             break;
           default:
             throw new UnsupportedOperationException();
         }
-        int velocity = scaleVelocity(scene.getMaximumItemHeight(), mappedBlock.getBlock().getItem().getHeight());
+        float brightness = sequencedBlock.getBlock().getItem().getColor().getBrightness();
+        int velocity = scaleVelocity(blockSequence.getMaximumBrightness(), brightness);
         if (options.getTrace().isSet(TraceOption.MARKER)) {
-          mappedBlock.getBlock().getComposable().addToTrack(trackBuilder, tick, midiChannel, velocity, duration, blockIndex);
+          sequencedBlock.getBlock().getComposable().addToTrack(trackBuilder, tick, midiChannel, velocity, duration, blockIndex++);
         } else {
-          mappedBlock.getBlock().getComposable().addToTrack(trackBuilder, tick, midiChannel, velocity, duration);
+          sequencedBlock.getBlock().getComposable().addToTrack(trackBuilder, tick, midiChannel, velocity, duration);
         }
       }
-      int lastTick = scene.getMappedWidth();
+      int lastTick = blockSequence.getTotalDuration();
       trackBuilder.addMetaMessage(lastTick, midiChannel, MidiUtils.META_END_OF_TRACK_TYPE, null, 0);
       return sequence;
     } catch (InvalidMidiDataException e) {
@@ -86,10 +89,10 @@ public class Converter {
     return midiProgram;
   }
 
-  private int scaleVelocity(int maximumItemHeight, int itemHeight) {
+  private int scaleVelocity(float maximumItemBrightness, float itemBrightness) {
     int baseMidiVelocity = options.getMidiBaseVelocity();
     int dynamicVelocityRange = MAXIMUM_VELOCITY - baseMidiVelocity;
-    int scaledVelocity = baseMidiVelocity + ((dynamicVelocityRange * itemHeight) / maximumItemHeight);
+    int scaledVelocity = (int) (baseMidiVelocity + ((dynamicVelocityRange * itemBrightness) / maximumItemBrightness));
     return scaledVelocity;
   }
 
