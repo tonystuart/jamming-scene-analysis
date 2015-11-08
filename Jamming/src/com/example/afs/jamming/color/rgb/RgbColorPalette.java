@@ -9,6 +9,8 @@
 
 package com.example.afs.jamming.color.rgb;
 
+import com.example.afs.jamming.color.base.Color;
+
 public class RgbColorPalette {
 
   // http://en.wikipedia.org/wiki/Web_colors

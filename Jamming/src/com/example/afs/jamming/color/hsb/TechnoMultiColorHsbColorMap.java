@@ -9,14 +9,15 @@
 
 package com.example.afs.jamming.color.hsb;
 
+import com.example.afs.jamming.color.base.Color;
 import com.example.afs.jamming.sound.ArpeggiatedChord;
 
 public class TechnoMultiColorHsbColorMap extends HsbColorMap {
 
-  public static final HsbColor blue = new HsbColor("Blue", .70f);
-  public static final HsbColor green = new HsbColor("Green", .50f);
-  public static final HsbColor red = new HsbColor("Red", .10f);
-  public static final HsbColor yellow = new HsbColor("Yellow", .20f);
+  public static final Color blue = new Color("Blue", .70f);
+  public static final Color green = new Color("Green", .50f);
+  public static final Color red = new Color("Red", .10f);
+  public static final Color yellow = new Color("Yellow", .20f);
 
   // "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
   // 0           2          4    5          7          9          11   12         14         16   17         19         21         23

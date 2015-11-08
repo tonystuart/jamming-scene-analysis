@@ -11,14 +11,15 @@ package com.example.afs.jamming.color.base;
 
 import java.util.Map.Entry;
 
-import com.example.afs.jamming.color.rgb.Color;
+import com.example.afs.jamming.image.Item;
 import com.example.afs.jamming.sound.Composable;
+import com.example.afs.jamming.utility.Node;
 
 public interface ColorMap {
 
-  void calibrate(String[] colors);
+  void calibrate(Node<Item> items);
 
-  Entry<? extends Color, ? extends Composable> findClosestEntry(int colorValue);
+  Entry<? extends Color, ? extends Composable> findClosestEntry(Color color);
 
   String getName();
 }

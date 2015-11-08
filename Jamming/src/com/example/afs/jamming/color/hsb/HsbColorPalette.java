@@ -9,12 +9,14 @@
 
 package com.example.afs.jamming.color.hsb;
 
+import com.example.afs.jamming.color.base.Color;
+
 public class HsbColorPalette {
-  public static final HsbColor BLUE = new HsbColor("BLUE", 0x0000ff);
-  public static final HsbColor CYAN = new HsbColor("CYAN", 0x00ffff);
-  public static final HsbColor GREEN = new HsbColor("GREEN", 0x00ff00);
-  public static final HsbColor MAGENTA = new HsbColor("MAGENTA", 0xff00ff);
-  public static final HsbColor ORANGE = new HsbColor("ORANGE", 0xffb000);
-  public static final HsbColor RED = new HsbColor("RED", 0xff0000);
-  public static final HsbColor YELLOW = new HsbColor("YELLOW", 0xffff00);
+  public static final Color BLUE = new Color("BLUE", 0x0000ff);
+  public static final Color CYAN = new Color("CYAN", 0x00ffff);
+  public static final Color GREEN = new Color("GREEN", 0x00ff00);
+  public static final Color MAGENTA = new Color("MAGENTA", 0xff00ff);
+  public static final Color ORANGE = new Color("ORANGE", 0xffb000);
+  public static final Color RED = new Color("RED", 0xff0000);
+  public static final Color YELLOW = new Color("YELLOW", 0xffff00);
 }

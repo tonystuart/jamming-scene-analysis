@@ -9,56 +9,31 @@
 
 package com.example.afs.jamming.color.hsb;
 
-import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import com.example.afs.jamming.color.base.BaseColorMap;
-import com.example.afs.jamming.color.rgb.Color;
+import com.example.afs.jamming.color.base.Color;
+import com.example.afs.jamming.color.base.HueColorComparator;
+import com.example.afs.jamming.image.Item;
 import com.example.afs.jamming.sound.Composable;
+import com.example.afs.jamming.utility.Node;
 
 public abstract class HsbColorMap extends BaseColorMap {
 
-  private class ColorMapComparator implements Comparator<HsbColor> {
-    @Override
-    public int compare(HsbColor o1, HsbColor o2) {
-      int deltaHue;
-      if (o1.getHue() < o2.getHue()) {
-        deltaHue = -1;
-      } else if (o1.getHue() > o2.getHue()) {
-        deltaHue = +1;
-      } else {
-        deltaHue = 0;
-      }
-      return deltaHue;
-    }
-  }
+  private TreeMap<Color, Composable> colorMap = new TreeMap<>(HueColorComparator.INSTANCE);
 
-  private TreeMap<HsbColor, Composable> colorMap = new TreeMap<>(new ColorMapComparator());
-
-  public void add(HsbColor color, Composable composable) {
+  public void add(Color color, Composable composable) {
     colorMap.put(color, composable);
   }
 
   @Override
-  public void calibrate(String[] hueValues) {
-    if (hueValues.length != colorMap.size()) {
-      throw new IllegalArgumentException("Cannot calibrate color map: expected " + colorMap.size() + " hue values, found " + hueValues.length + " hue values");
-    }
-    int hueIndex = 0;
-    TreeMap<HsbColor, Composable> newColorMap = new TreeMap<>(new ColorMapComparator());
-    for (Entry<HsbColor, Composable> entry : colorMap.entrySet()) {
-      String hue = hueValues[hueIndex++];
-      HsbColor newColor = new HsbColor(entry.getKey().getName(), Float.parseFloat(hue));
-      newColorMap.put(newColor, entry.getValue());
-    }
-    colorMap = newColorMap;
+  public void calibrate(Node<Item> items) {
   }
 
   @Override
-  public Entry<? extends Color, Composable> findClosestEntry(int rgb) {
-    HsbColor color = new HsbColor(rgb);
-    Entry<HsbColor, Composable> closestEntry = colorMap.ceilingEntry(color);
+  public Entry<? extends Color, Composable> findClosestEntry(Color color) {
+    Entry<Color, Composable> closestEntry = colorMap.ceilingEntry(color);
     if (closestEntry == null) {
       closestEntry = colorMap.firstEntry();
     }
@@ -70,7 +45,7 @@ public abstract class HsbColorMap extends BaseColorMap {
     StringBuilder s = new StringBuilder();
     s.append("name=");
     s.append(getName());
-    for (Entry<HsbColor, Composable> entry : colorMap.entrySet()) {
+    for (Entry<Color, Composable> entry : colorMap.entrySet()) {
       s.append("\n");
       s.append(entry.getKey());
       s.append(" ");

@@ -9,6 +9,7 @@
 
 package com.example.afs.jamming.color.rgb;
 
+import com.example.afs.jamming.color.base.Color;
 import com.example.afs.jamming.sound.ScaleBasedChord;
 
 public class Chord7ColorRgbColorMap extends RgbColorMap {
