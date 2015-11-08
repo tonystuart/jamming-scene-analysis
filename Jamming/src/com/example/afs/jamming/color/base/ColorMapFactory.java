@@ -17,22 +17,44 @@ import com.example.afs.jamming.color.hsb.Chord7ColorHsbColorMap;
 import com.example.afs.jamming.color.hsb.DrumHsbColorMap;
 import com.example.afs.jamming.color.hsb.Note1OctaveLowHsbColorMap;
 import com.example.afs.jamming.color.hsb.Note2OctaveHsbColorMap;
+import com.example.afs.jamming.color.hsb.Note4OctaveDynamicHsbColorMap;
 import com.example.afs.jamming.color.hsb.Note4OctaveHsbColorMap;
 import com.example.afs.jamming.color.hsb.TechnoMultiColorHsbColorMap;
 import com.example.afs.jamming.color.rgb.Chord7ColorRgbColorMap;
 import com.example.afs.jamming.color.rgb.DrumRgbColorMap;
+import com.example.afs.jamming.sound.ArpeggiatedScaleBasedChord;
+import com.example.afs.jamming.sound.Composable;
 
-public final class ColorMaps {
+public final class ColorMapFactory {
 
-  public static final ColorMaps instance = new ColorMaps();
+  public static class Composables {
+    public static final Composable[] argpeggiatedScale = new Composable[] {
+        //
+        new ArpeggiatedScaleBasedChord("C (I)", 60, 0, 4, 7), //
+        new ArpeggiatedScaleBasedChord("Dmin (ii)", 60, 2, 5, 9), //
+        new ArpeggiatedScaleBasedChord("Emin (iii)", 60, 4, 7, 11), //
+        new ArpeggiatedScaleBasedChord("F (IV)", 60, 5, 9, 12), //
+        new ArpeggiatedScaleBasedChord("G (V)", 60, 7, 11, 14), //
+        new ArpeggiatedScaleBasedChord("Amin (vi)", 60, 9, 12, 16), //
+        new ArpeggiatedScaleBasedChord("Bdim (vii\u00B0)", 60, 11, 14, 17), //
+    };
+  }
 
-  public static ColorMaps getSingleton() {
+  private class ArpeggiatedClusteringHueColorMap extends ClusteringColorMap {
+    public ArpeggiatedClusteringHueColorMap() {
+      super(Composables.argpeggiatedScale, HueColorComparator.INSTANCE);
+    }
+  }
+
+  public static final ColorMapFactory instance = new ColorMapFactory();
+
+  public static ColorMapFactory getSingleton() {
     return instance;
   }
 
   private Map<String, ColorMap> colorMaps = new TreeMap<>();
 
-  public ColorMaps() {
+  public ColorMapFactory() {
     // http://www.javaworld.com/article/2077477/learn-java/java-tip-113--identify-subclasses-at-runtime.html
     register(new Chord7ColorArpeggiatedHsbColorMap());
     register(new Chord7ColorHsbColorMap());
@@ -42,6 +64,8 @@ public final class ColorMaps {
     register(new Note1OctaveLowHsbColorMap());
     register(new Note2OctaveHsbColorMap());
     register(new Note4OctaveHsbColorMap());
+    register(new Note4OctaveDynamicHsbColorMap());
+    register(new ArpeggiatedClusteringHueColorMap());
     register(new TechnoMultiColorHsbColorMap());
   }
 

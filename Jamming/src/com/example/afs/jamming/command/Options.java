@@ -12,7 +12,7 @@ package com.example.afs.jamming.command;
 import sequencemapper.SequenceMapperFactory.SequenceMapping;
 
 import com.example.afs.jamming.color.base.ColorMap;
-import com.example.afs.jamming.color.base.ColorMaps;
+import com.example.afs.jamming.color.base.ColorMapFactory;
 import com.example.afs.jamming.command.Raspistill.WhiteBalance;
 import com.example.afs.jamming.command.Trace.TraceOption;
 import com.example.afs.jamming.sound.Converter;
@@ -20,7 +20,7 @@ import com.example.afs.jamming.sound.Converter.TickOrigin;
 
 public class Options {
 
-  private ColorMap colorMap = ColorMaps.getSingleton().getDefault();
+  private ColorMap colorMap = ColorMapFactory.getSingleton().getDefault();
   private int columnCount = 24;
   private String imageBaseFilename = "Jamming";
   private int imageBrightness = 40;
