@@ -11,8 +11,7 @@ package com.example.afs.jamming.image;
 
 import java.awt.image.BufferedImage;
 
-import com.example.afs.jamming.color.hsb.HsbColor;
-import com.example.afs.jamming.color.rgb.Color;
+import com.example.afs.jamming.color.base.Color;
 import com.example.afs.jamming.utility.Node;
 
 public class ItemFinder {
@@ -39,43 +38,30 @@ public class ItemFinder {
     int averageRed = totalRed / totalPixels;
     int averageGreen = totalGreen / totalPixels;
     int averageBlue = totalBlue / totalPixels;
-    int averageRgb = Color.getColor(averageRed, averageGreen, averageBlue);
-    HsbColor color = new HsbColor(averageRgb);
+    Color color = new Color(averageRed, averageGreen, averageBlue);
     Item item = new Item(top, left, itemWidth, itemHeight, color);
     return item;
   }
 
   private void processColumns(Node<Item> items, BufferedImage image, int top, int height, int left, int right, int columnCount) {
     int totalWidth = right - left;
-    int itemWidth = totalWidth / columnCount;
-    int widthRemaining = totalWidth;
-    int finalColumn = columnCount - 1;
-    int itemLeft = left;
     for (int column = 0; column < columnCount; column++) {
-      if (column == finalColumn) {
-        itemWidth = widthRemaining;
-      }
+      int itemLeft = (column * totalWidth) / columnCount;
+      int nextItemLeft = ((column + 1) * totalWidth) / columnCount;
+      int itemWidth = nextItemLeft - itemLeft;
       Item item = createItem(image, top, itemLeft, itemWidth, height);
       items.addChild(item);
       setAverageColor(image, item);
-      itemLeft += itemWidth;
-      widthRemaining -= itemWidth;
     }
   }
 
   private void processRows(Node<Item> items, BufferedImage image, int top, int bottom, int left, int right, int rowCount, int columnCount) {
     int totalHeight = bottom - top;
-    int itemHeight = totalHeight / rowCount;
-    int heightRemaining = totalHeight;
-    int finalRow = rowCount - 1;
-    int itemTop = top;
     for (int row = 0; row < rowCount; row++) {
-      if (row == finalRow) {
-        itemHeight = heightRemaining;
-      }
+      int itemTop = top + (row * totalHeight) / rowCount;
+      int nextItemTop = top + ((row + 1) * totalHeight) / rowCount;
+      int itemHeight = nextItemTop - itemTop;
       processColumns(items, image, itemTop, itemHeight, left, right, columnCount);
-      itemTop += itemHeight;
-      heightRemaining -= itemHeight;
     }
   }
 
