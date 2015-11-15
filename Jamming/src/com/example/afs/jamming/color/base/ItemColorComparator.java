@@ -9,17 +9,20 @@
 
 package com.example.afs.jamming.color.base;
 
-import java.util.Map.Entry;
+import java.util.Comparator;
 
 import com.example.afs.jamming.image.Item;
-import com.example.afs.jamming.sound.Composable;
-import com.example.afs.jamming.utility.Node;
 
-public interface ColorMap {
+public class ItemColorComparator implements Comparator<Item> {
 
-  void calibrate(Node<Item> items);
+  private Comparator<Color> colorComparator;
 
-  Entry<? extends Color, ? extends Composable> findClosestEntry(Color color);
+  public ItemColorComparator(Comparator<Color> colorComparator) {
+    this.colorComparator = colorComparator;
+  }
 
-  String getName();
+  @Override
+  public int compare(Item o1, Item o2) {
+    return colorComparator.compare(o1.getColor(), o2.getColor());
+  }
 }

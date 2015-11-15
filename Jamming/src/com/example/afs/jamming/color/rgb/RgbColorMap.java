@@ -14,7 +14,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.example.afs.jamming.color.base.BaseColorMap;
+import com.example.afs.jamming.color.base.Color;
+import com.example.afs.jamming.image.Item;
 import com.example.afs.jamming.sound.Composable;
+import com.example.afs.jamming.utility.Node;
 
 public abstract class RgbColorMap extends BaseColorMap {
 
@@ -25,25 +28,16 @@ public abstract class RgbColorMap extends BaseColorMap {
   }
 
   @Override
-  public void calibrate(String[] rgbValues) {
-    if (rgbValues.length != colorMap.size()) {
-      throw new IllegalArgumentException("Cannot calibrate color map: expected " + colorMap.size() + " RGB values, found " + rgbValues.length + " RGB values");
-    }
-    int rgbIndex = 0;
-    Map<Color, Composable> newColorMap = new HashMap<>();
-    for (Entry<Color, Composable> entry : colorMap.entrySet()) {
-      String rgb = rgbValues[rgbIndex++];
-      Color newColor = new Color(Integer.parseInt(rgb));
-      newColorMap.put(newColor, entry.getValue());
-    }
-    colorMap = newColorMap;
+  public void calibrate(Node<Item> items) {
   }
 
   @Override
-  public Entry<? extends Color, Composable> findClosestEntry(int rgb) {
-    int r1 = Color.getRed(rgb);
-    int g1 = Color.getGreen(rgb);
-    int b1 = Color.getBlue(rgb);
+  public Entry<? extends Color, Composable> findClosestEntry(Color color) {
+    // There is a truly remarkable O(log n) algorithm but hanc marginis exiguitas non caperet
+    // See https://en.wikipedia.org/wiki/Nearest_neighbor_search
+    int r1 = color.getRed();
+    int g1 = color.getGreen();
+    int b1 = color.getBlue();
     int closestDistance = 0;
     Entry<Color, Composable> closestEntry = null;
     for (Entry<Color, Composable> mapEntry : colorMap.entrySet()) {

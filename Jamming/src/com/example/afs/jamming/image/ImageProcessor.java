@@ -77,29 +77,19 @@ public class ImageProcessor {
     List<ItemFinderTask> itemFinderTasks = new LinkedList<>();
     if (threadCount > rowCount) {
       threadCount = rowCount;
+    } else if (rowCount < 10 && rowCount % threadCount != 0) {
+      threadCount = 1;
     }
-    int rowCountRemaining = rowCount;
-    int imageHeightRemaining = imageHeight;
-    int finalThread = threadCount - 1;
-    int imageRowsPerItemRow = imageHeight / rowCount;
-    int rowCountPerTask = rowCountRemaining / threadCount;
-    int imageHeightPerTask = rowCountPerTask * imageRowsPerItemRow;
-    int taskRowCount = rowCountPerTask;
-    int taskImageHeight = imageHeightPerTask;
-    int taskImageTop = 0;
-
+    int totalHeight = image.getHeight();
     for (int i = 0; i < threadCount; i++) {
-      if (i == finalThread) {
-        taskRowCount = rowCountRemaining;
-        taskImageHeight = imageHeightRemaining;
-      }
-      int taskImageBottom = taskImageTop + taskImageHeight;
+      int taskImageTop = (i * totalHeight) / threadCount;
+      int nextTaskImageTop = ((i + 1) * totalHeight) / threadCount;
+      int taskImageBottom = nextTaskImageTop;
+      int taskFirstRow = (i * rowCount) / threadCount;
+      int nextTaskFirstRow = ((i + 1) * rowCount) / threadCount;
+      int taskRowCount = nextTaskFirstRow - taskFirstRow;
       itemFinderTasks.add(new ItemFinderTask(image, taskImageTop, taskImageBottom, 0, imageWidth, taskRowCount, columnCount));
-      rowCountRemaining -= taskRowCount;
-      imageHeightRemaining -= taskImageHeight;
-      taskImageTop = taskImageBottom;
     }
-
     return itemFinderTasks;
   }
 

@@ -9,6 +9,7 @@
 
 package com.example.afs.jamming.color.hsb;
 
+import com.example.afs.jamming.color.base.Color;
 import com.example.afs.jamming.sound.Note;
 
 public class Note1OctaveLowHsbColorMap extends HsbColorMap {
@@ -21,7 +22,7 @@ public class Note1OctaveLowHsbColorMap extends HsbColorMap {
     float colorRange = 1f / noteCount;
     float hue = 0;
     for (int i = FIRST; i < LAST; i++) {
-      HsbColor color = new HsbColor(hue);
+      Color color = new Color(hue);
       Note Note = new Note(i);
       add(color, Note);
       hue += colorRange;

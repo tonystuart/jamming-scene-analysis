@@ -12,7 +12,7 @@ package com.example.afs.jamming.command;
 import sequencemapper.SequenceMapperFactory.SequenceMapping;
 
 import com.example.afs.jamming.Jamming;
-import com.example.afs.jamming.color.base.ColorMaps;
+import com.example.afs.jamming.color.base.ColorMapFactory;
 import com.example.afs.jamming.command.Raspistill.WhiteBalance;
 import com.example.afs.jamming.command.Trace.TraceOption;
 import com.example.afs.jamming.sound.Converter.TickOrigin;
@@ -42,7 +42,7 @@ public class OptionParser {
         String[] tokens = arg.split("=");
         if (tokens.length > 0 && tokens[0].startsWith("--")) {
           if (tokens.length == 2 && tokens[0].equals("--colorMap")) {
-            options.setColorMap(ColorMaps.getSingleton().get(tokens[1]));
+            options.setColorMap(ColorMapFactory.getSingleton().get(tokens[1]));
           } else if (tokens[0].equals("--help")) {
             exitWithUsage();
           } else if (tokens.length == 2 && tokens[0].equals("--imageBaseFilename")) {
@@ -122,7 +122,7 @@ public class OptionParser {
     System.err.println("       --threads=image-processing-threads (defaults to " + options.getThreads() + ", zero to default to number of processors)");
     System.err.println("       --trace=" + getOptions(TraceOption.class) + " (defaults to " + options.getTrace() + ", may be specified more than once)");
     System.err.println("Supported color maps:");
-    for (String name : ColorMaps.getSingleton().getNames()) {
+    for (String name : ColorMapFactory.getSingleton().getNames()) {
       System.err.println("       " + name);
     }
     System.exit(1);

@@ -9,35 +9,22 @@
 
 package com.example.afs.jamming.image;
 
-import com.example.afs.jamming.color.hsb.HsbColor;
-import com.example.afs.jamming.color.rgb.Color;
+import com.example.afs.jamming.color.base.Color;
 import com.example.afs.jamming.sound.Composable;
 
 public class Block {
-  private int averageRgb;
   private Color color;
   private Composable composable;
   private Item item;
 
-  public Block(Item item, Color color, Composable composable, int averageRgb) {
+  public Block(Item item, Color color, Composable composable) {
     this.item = item;
     this.color = color;
     this.composable = composable;
-    this.averageRgb = averageRgb;
   }
 
   public Color getAverageColor() {
-    Color averageColor;
-    if (color instanceof HsbColor) {
-      averageColor = new HsbColor(averageRgb);
-    } else {
-      averageColor = new Color(averageRgb);
-    }
-    return averageColor;
-  }
-
-  public int getAverageRgb() {
-    return averageRgb;
+    return item.getColor();
   }
 
   public Color getColor() {
@@ -53,11 +40,7 @@ public class Block {
   }
 
   public String toString() {
-    if (color instanceof HsbColor) {
-      return item + ", averageHsb=" + new HsbColor(averageRgb) + ", matchingHsb=" + color + ", composable=" + composable;
-    } else {
-      return item + ", averageRgb=" + Integer.toHexString(averageRgb) + ", distance=" + Color.getDistance(averageRgb, color) + ", color=" + color + ", composable=" + composable;
-    }
+    return item + ", matchingColor=" + color + ", distance=" + getAverageColor().getDistance(color) + ", composable=" + composable;
   }
 
 }

@@ -24,8 +24,8 @@ import sequencemapper.SequenceMapper;
 import sequencemapper.SequenceMapperFactory;
 import sequencemapper.SequencedBlock;
 
-import com.example.afs.jamming.color.base.ColorMaps;
-import com.example.afs.jamming.color.rgb.Color;
+import com.example.afs.jamming.color.base.Color;
+import com.example.afs.jamming.color.base.ColorMapFactory;
 import com.example.afs.jamming.command.Command;
 import com.example.afs.jamming.command.Command.Type;
 import com.example.afs.jamming.command.Monitor;
@@ -96,24 +96,6 @@ public class Jamming {
     };
   }
 
-  public Node<Block> processImage(BufferedImage image) {
-    ImageProcessor imageProcessor = new ImageProcessor(image, options);
-    Node<Item> items = imageProcessor.extractItems();
-    Node<Block> blocks = new Node<>();
-    for (Item item : items.getValues()) {
-      Block block = convertItemToBlock(imageProcessor, item);
-      blocks.addChild(block);
-    }
-    return blocks;
-  }
-
-  private Block convertItemToBlock(ImageProcessor imageProcessor, Item item) {
-    int averageRgb = item.getColor().getRgb();
-    Entry<? extends Color, ? extends Composable> entry = options.getColorMap().findClosestEntry(averageRgb);
-    Block block = new Block(item, entry.getKey(), entry.getValue(), averageRgb);
-    return block;
-  }
-
   private void displayHelp() {
     System.out.println("\nConsole monitor commands:");
     System.out.println("  Calibrate def - calibrate current color map");
@@ -131,7 +113,7 @@ public class Jamming {
     System.out.println("  Troff t - set trace option t off");
     System.out.println("\nMap options (name or number):");
     int mapNumber = 1;
-    for (String name : ColorMaps.getSingleton().getNames()) {
+    for (String name : ColorMapFactory.getSingleton().getNames()) {
       System.out.println("  " + (mapNumber++) + " - " + name);
     }
     System.out.println("\nTrace options:");
@@ -205,8 +187,6 @@ public class Jamming {
         if (isPlaying) {
           processFrame();
         }
-      } else if (command.matches("CAlibrate")) {
-        options.getColorMap().calibrate(command.getOperands());
       } else if (command.matches("CHannel")) {
         midiChannel = Integer.parseInt(command.getToken(1));
       } else if (command.matches("Help")) {
@@ -265,6 +245,19 @@ public class Jamming {
     loopCount++;
   }
 
+  private Node<Block> processImage(BufferedImage image) {
+    ImageProcessor imageProcessor = new ImageProcessor(image, options);
+    Node<Item> items = imageProcessor.extractItems();
+    options.getColorMap().calibrate(items);
+    Node<Block> blocks = new Node<>();
+    for (Item item : items.getValues()) {
+      Entry<? extends Color, ? extends Composable> entry = options.getColorMap().findClosestEntry(item.getColor());
+      Block block = new Block(item, entry.getKey(), entry.getValue());
+      blocks.addChild(block);
+    }
+    return blocks;
+  }
+
   private void processMapCommand(String[] operands) {
     if (operands.length == 0) {
       System.out.println("Current color map");
@@ -273,11 +266,11 @@ public class Jamming {
       String mapName;
       try {
         int mapNumber = Integer.parseInt(operands[0]);
-        mapName = ColorMaps.getSingleton().getNames()[mapNumber - 1];
+        mapName = ColorMapFactory.getSingleton().getNames()[mapNumber - 1];
       } catch (NumberFormatException e) {
         mapName = operands[0];
       }
-      options.setColorMap(ColorMaps.getSingleton().get(mapName));
+      options.setColorMap(ColorMapFactory.getSingleton().get(mapName));
       System.out.println(options.getColorMap());
     }
   }

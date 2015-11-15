@@ -9,17 +9,17 @@
 
 package com.example.afs.jamming.image;
 
-import com.example.afs.jamming.color.hsb.HsbColor;
+import com.example.afs.jamming.color.base.Color;
 
 public class Item {
 
-  private HsbColor color;
+  private Color color;
   private int height;
   private int left;
   private int top;
   private int width;
 
-  public Item(int top, int left, int itemWidth, int itemHeight, HsbColor color) {
+  public Item(int top, int left, int itemWidth, int itemHeight, Color color) {
     this.top = top;
     this.left = left;
     this.width = itemWidth;
@@ -27,7 +27,7 @@ public class Item {
     this.color = color;
   }
 
-  public HsbColor getColor() {
+  public Color getColor() {
     return color;
   }
 
