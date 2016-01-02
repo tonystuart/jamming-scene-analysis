@@ -24,6 +24,7 @@ import com.example.afs.jamming.color.rgb.Chord7ColorRgbColorMap;
 import com.example.afs.jamming.color.rgb.DrumRgbColorMap;
 import com.example.afs.jamming.sound.ArpeggiatedScaleBasedChord;
 import com.example.afs.jamming.sound.Composable;
+import com.example.afs.jamming.sound.DynamicRhythmScaleBasedChord;
 
 public final class ColorMapFactory {
 
@@ -38,11 +39,27 @@ public final class ColorMapFactory {
         new ArpeggiatedScaleBasedChord("Amin (vi)", 60, 9, 12, 16), //
         new ArpeggiatedScaleBasedChord("Bdim (vii\u00B0)", 60, 11, 14, 17), //
     };
+    public static final Composable[] dynamicRhythmScale = new Composable[] {
+        //
+        new DynamicRhythmScaleBasedChord("C (I)", 60, 0, 4, 7), //
+        new DynamicRhythmScaleBasedChord("Dmin (ii)", 60, 2, 5, 9), //
+        new DynamicRhythmScaleBasedChord("Emin (iii)", 60, 4, 7, 11), //
+        new DynamicRhythmScaleBasedChord("F (IV)", 60, 5, 9, 12), //
+        new DynamicRhythmScaleBasedChord("G (V)", 60, 7, 11, 14), //
+        new DynamicRhythmScaleBasedChord("Amin (vi)", 60, 9, 12, 16), //
+        new DynamicRhythmScaleBasedChord("Bdim (vii\u00B0)", 60, 11, 14, 17), //
+    };
   }
 
   private class ArpeggiatedClusteringHueColorMap extends ClusteringColorMap {
     public ArpeggiatedClusteringHueColorMap() {
       super(Composables.argpeggiatedScale, HueColorComparator.INSTANCE);
+    }
+  }
+
+  private class DynamicRhythmClusteringHueColorMap extends ClusteringColorMap {
+    public DynamicRhythmClusteringHueColorMap() {
+      super(Composables.dynamicRhythmScale, HueColorComparator.INSTANCE);
     }
   }
 
@@ -56,16 +73,17 @@ public final class ColorMapFactory {
 
   public ColorMapFactory() {
     // http://www.javaworld.com/article/2077477/learn-java/java-tip-113--identify-subclasses-at-runtime.html
+    register(new ArpeggiatedClusteringHueColorMap());
     register(new Chord7ColorArpeggiatedHsbColorMap());
     register(new Chord7ColorHsbColorMap());
     register(new Chord7ColorRgbColorMap());
     register(new DrumHsbColorMap());
     register(new DrumRgbColorMap());
+    register(new DynamicRhythmClusteringHueColorMap());
     register(new Note1OctaveLowHsbColorMap());
     register(new Note2OctaveHsbColorMap());
     register(new Note4OctaveHsbColorMap());
     register(new Note4OctaveDynamicHsbColorMap());
-    register(new ArpeggiatedClusteringHueColorMap());
     register(new TechnoMultiColorHsbColorMap());
   }
 
